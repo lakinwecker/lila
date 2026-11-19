@@ -1,4 +1,5 @@
 import { numberFormat } from 'lib/i18n';
+import { licon } from 'lib/licon';
 
 import { formatMoney, hasStripe, renderPayPal, stripeCheckout } from './checkout';
 import { fiveMinutes } from './constants';
@@ -10,21 +11,25 @@ type Region = 'na' | 'eu' | 'as' | 'sa' | 'af' | 'oc' | 'an';
 
 interface PriceAnchor {
   region: Region;
-  flag: string;
+  country: string; // see public/flags
   text: () => string;
 }
 
 // things that cost about $7.50 around the world, the visitor's region first
 const priceAnchors: PriceAnchor[] = [
-  { region: 'na', flag: '🇺🇸', text: () => i18n.recap.donateAnchorNewYork },
-  { region: 'eu', flag: '🇬🇧', text: () => i18n.recap.donateAnchorLondon },
-  { region: 'eu', flag: '🇫🇷', text: () => i18n.recap.donateAnchorParis },
-  { region: 'as', flag: '🇯🇵', text: () => i18n.recap.donateAnchorTokyo },
-  { region: 'sa', flag: '🇧🇷', text: () => i18n.recap.donateAnchorSaoPaulo },
-  { region: 'af', flag: '🇿🇦', text: () => i18n.recap.donateAnchorCapeTown },
-  { region: 'oc', flag: '🇦🇺', text: () => i18n.recap.donateAnchorMelbourne },
+  { region: 'na', country: 'US', text: () => i18n.recap.donateAnchorNewYork },
+  { region: 'eu', country: 'GB', text: () => i18n.recap.donateAnchorLondon },
+  { region: 'eu', country: 'FR', text: () => i18n.recap.donateAnchorParis },
+  { region: 'as', country: 'JP', text: () => i18n.recap.donateAnchorTokyo },
+  { region: 'sa', country: 'BR', text: () => i18n.recap.donateAnchorSaoPaulo },
+  { region: 'af', country: 'ZA', text: () => i18n.recap.donateAnchorCapeTown },
+  { region: 'oc', country: 'AU', text: () => i18n.recap.donateAnchorMelbourne },
 ];
-const antarctica: PriceAnchor = { region: 'an', flag: '🐧', text: () => i18n.recap.donateAnchorAntarctica };
+const antarctica: PriceAnchor = {
+  region: 'an',
+  country: 'AQ',
+  text: () => i18n.recap.donateAnchorAntarctica,
+};
 
 const southAmerica =
   /^America\/(Sao_Paulo|Argentina|Buenos_Aires|Bogota|Lima|Santiago|Caracas|Montevideo|La_Paz|Asuncion|Guayaquil|Cayenne|Paramaribo|Guyana|Recife|Fortaleza|Belem|Manaus|Bahia)/;
@@ -43,8 +48,6 @@ const detectRegion = (): Region => {
   if (tz.startsWith('Australia/') || tz.startsWith('Pacific/')) return 'oc';
   return 'na';
 };
-
-const cardIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5" /><path d="M2.5 10h19M6 15h4" /></svg>`;
 
 export function renderDonate(el: HTMLElement, sc: Scope, { opts, bg, restart }: SlideCtx): void {
   const minutes = Math.round(opts.recap!.games.timePlaying / 60);
@@ -82,7 +85,7 @@ export function renderDonate(el: HTMLElement, sc: Scope, { opts, bg, restart }: 
       <div class="tiers" role="radiogroup"></div>
       <p class="donate__amount"></p>
       <div class="donate__pay">
-        <button class="cta donate__card">${cardIcon}<span>${esc(i18n.patron.donate)}</span></button>
+        <button class="button button-fat donate__card" data-icon="${licon.Wings}">${esc(i18n.patron.donate)}</button>
         <div class="donate__paypal" data-freq="monthly"></div>
         <div class="donate__paypal" data-freq="onetime"></div>
       </div>
@@ -199,25 +202,25 @@ export function renderDonate(el: HTMLElement, sc: Scope, { opts, bg, restart }: 
         panel.hidden = false;
       };
   };
-  const replayButton = `<button class="cta cta--ghost" data-act="replay">${esc(i18n.recap.donateReplay)} ↺</button>`;
+  const replayButton = `<button class="button button-metal" data-act="replay" data-icon="${licon.Reload}">${esc(i18n.recap.donateReplay)}</button>`;
   $in('.donate__not-today').onclick = () => {
     after(
       `<p class="donate__thanks">${esc(i18n.recap.thanksTitle)}</p>
        <p class="lead">${trHtml(i18n.recap.thanksHaveAGreat.asArray(raw(`<strong>${opts.recap!.year + 1}</strong>`)))}</p>
-       <p class="small">${esc(i18n.recap.donateNoWorries)} 💜</p>
+       <p class="small">${esc(i18n.recap.donateNoWorries)}</p>
        <div class="donate__actions">
          ${replayButton}
          <button class="donate__skip" data-act="back">${esc(i18n.recap.donateChangedMyMind)}</button>
        </div>`,
     );
-    sc.onDispose(bg.fireworks(6, 2000));
+    sc.onDispose(bg.fireworks(4, 2000));
   };
 
   const ticker = $in('.ticker');
   let n = 0;
   const show = () => {
     const a = anchors[n++ % anchors.length];
-    ticker.innerHTML = `<span class="ticker__item">${a.flag} <b>${esc(a.text())}</b></span>`;
+    ticker.innerHTML = `<span class="ticker__item"><img class="flag" src="${site.asset.url(`flags/${a.country}.webp`)}" alt=""> <b>${esc(a.text())}</b></span>`;
     if (anchors.length > 1) sc.after(n === 1 ? 6000 : 4200, show);
   };
   show();

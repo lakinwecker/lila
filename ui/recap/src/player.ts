@@ -6,13 +6,9 @@ import { makeScope, type Scope } from './scope';
 import { buildSlides } from './slides';
 
 export const skeleton = (): string => `
+  <div class="floor" aria-hidden="true"><canvas></canvas></div>
+  <div class="sky" aria-hidden="true"><canvas></canvas><canvas class="sky__twinkle"></canvas></div>
   <canvas class="recap__bg" aria-hidden="true"></canvas>
-  <div class="blobs" aria-hidden="true">
-    <div class="blob blob--a"></div>
-    <div class="blob blob--b"></div>
-    <div class="blob blob--c"></div>
-  </div>
-  <div class="grain" aria-hidden="true"></div>
   <header class="hud">
     <div class="progress"></div>
     <div class="hud__bar">
@@ -31,7 +27,11 @@ export function play(root: HTMLElement, opts: Opts): void {
   const $in = <E extends Element = HTMLElement>(s: string) => root.querySelector<E>(s)!;
   const stage = $in('.stage');
   const progress = $in('.progress');
-  const bg = makeBackground($in<HTMLCanvasElement>('.recap__bg'));
+  const bg = makeBackground(
+    $in<HTMLCanvasElement>('.recap__bg'),
+    $in<HTMLCanvasElement>('.floor canvas'),
+    $in('.sky'),
+  );
   let idx = -1;
   let current: { el: HTMLElement; scope: Scope } | undefined;
   let elapsed = 0;
@@ -63,7 +63,7 @@ export function play(root: HTMLElement, opts: Opts): void {
   };
 
   const setTheme = (theme: Palette) => {
-    ['--c1', '--c2', '--c3'].forEach((v, i) => root.style.setProperty(v, theme[i]));
+    root.style.cssText = theme.map((c, i) => `--c${i + 1}:${c}`).join(';');
     bg.setColors(theme);
   };
 
@@ -72,9 +72,22 @@ export function play(root: HTMLElement, opts: Opts): void {
   const bars = [...progress.querySelectorAll<HTMLElement>('i')];
   $in('.hud__title').textContent = i18n.recap.shareableTitle(opts.recap!.year);
 
+  // phones that can't keep up get a calmer recap rather than a choppy one
+  let slowFrames = 0;
+  let frames = 0;
+  const goLite = () => {
+    root.classList.add('recap--lite');
+    bg.lite();
+  };
+  if (new URLSearchParams(location.search).has('lite')) goLite();
+
   const tick = (now: number) => {
     const dt = now - last;
     last = now;
+    if (!document.hidden && frames++ > 30 && !root.classList.contains('recap--lite')) {
+      slowFrames = dt > 34 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
+      if (slowFrames > 45) goLite();
+    }
     const def = slides[idx];
     if (def && !paused && !holding) {
       elapsed += dt;

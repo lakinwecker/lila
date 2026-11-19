@@ -3285,7 +3285,7 @@ interface I18n {
     donateMinutesOfUptimePerMonth: I18nPlural;
     /** Not today */
     donateNotToday: string;
-    /** No worries! All forms of support from the community are vital for us, and that includes just being here. */
+    /** No problem. Just playing here helps too. */
     donateNoWorries: string;
     /** One more thing… */
     donateOneMoreThing: string;
@@ -3299,7 +3299,7 @@ interface I18n {
     donateYouPlayedMinutes: I18nPlural;
     /** is how you started %s of your games as white */
     firstMoveStats: I18nFormat;
-    /** Your signature first move */
+    /** Your favourite first move */
     firstMoveTitle: string;
     /** What did it take to get there? */
     gamesNextQuestion: string;
@@ -3391,18 +3391,18 @@ interface I18n {
     thanksHaveAGreat: I18nFormat;
     /** Thank you for playing on Lichess! */
     thanksTitle: string;
-    /** Now that is some serious dedication! */
-    timeDedication: string;
-    /** Every one of those minutes counted. */
-    timeEveryMinuteCounted: string;
+    /** That is a lot of chess. */
+    timeALot: string;
     /** How many moves did you play in all that time? */
     timeHowManyMoves: string;
     /** You could have watched the extended Lord of the Rings trilogy %s times */
     timeLordOfTheRings: I18nPlural;
+    /** That seems like a reasonable amount of chess. */
+    timeReasonable: string;
     /** Time spent playing */
     timeSpentPlaying: string;
-    /** Time well spent, one move at a time. */
-    timeWellSpent: string;
+    /** That is way too much chess. */
+    timeTooMuch: string;
   };
   report: {
     /** In the meantime, you can block this user: */

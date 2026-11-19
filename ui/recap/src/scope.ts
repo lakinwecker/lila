@@ -1,4 +1,4 @@
-import { easeOutExpo, fmt } from './html';
+import { easeOutExpo, fmt, setText } from './html';
 
 // per-slide scope: timers and animation loops are cancelled automatically when the slide leaves
 export interface Scope {
@@ -48,11 +48,11 @@ export function countUp(
   { dur = 2200, delay = 0, format = fmt }: CountOpts = {},
 ): void {
   if (!el) return;
-  el.textContent = format(0);
+  setText(el, format(0));
   sc.after(delay, () =>
     sc.loop(t => {
       const k = easeOutExpo(Math.min(1, t / dur));
-      el.textContent = format(to * k);
+      setText(el, format(to * k));
       return k < 1;
     }),
   );
@@ -66,16 +66,3 @@ export const countAll = (sc: Scope, root: Element, opts: CountOpts = {}): void =
       delay: parseFloat(el.dataset.delay || '0') * 1000,
     }),
   );
-
-export function typeText(sc: Scope, el: HTMLElement, text: string, delay = 0): void {
-  sc.after(delay, () => {
-    let shown = 0;
-    sc.loop(t => {
-      const n = Math.min(text.length, Math.floor(t / 38));
-      if (n !== shown) el.textContent = text.slice(0, (shown = n));
-      if (n < text.length) return true;
-      sc.after(1600, () => el.classList.remove('typed'));
-      return false;
-    });
-  });
-}
